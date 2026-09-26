@@ -1,0 +1,61 @@
+{
+  "passed": 13,
+  "failed": 0,
+  "prevented": 43,
+  "unauthorized_executions_approved_order": 0,
+  "unapproved_order_bypass_demonstrated": true,
+  "tests": [
+    {
+      "test": "1 block bash grep/rg/cat, arbitrary shells, broad reads and edits",
+      "passed": true
+    },
+    {
+      "test": "2 allow approved commands, bounded dispatcher reads and retrieval tools",
+      "passed": true
+    },
+    {
+      "test": "3 completed structural context, not a call or invalid/text success, unlocks",
+      "passed": true
+    },
+    {
+      "test": "4 same-message context plus grep cannot self-satisfy even if result wins race",
+      "passed": true
+    },
+    {
+      "test": "5 fourth repeated block aborts entire mixed batch with visible final text",
+      "passed": true
+    },
+    {
+      "test": "6 availability, persistent degraded flag and bounded fallback",
+      "passed": true
+    },
+    {
+      "test": "6b internal telemetry failure aborts gate_unenforced; missing/inactive tools are config failures",
+      "passed": true
+    },
+    {
+      "test": "7 dispatch/root binding, late results, compaction, reused sessions",
+      "passed": true
+    },
+    {
+      "test": "8 kill switch fully inert and bounded-scratch logs explicit full-read exception",
+      "passed": true
+    },
+    {
+      "test": "9 input mutator before gate blocked; after gate is explicitly unapproved order",
+      "passed": true
+    },
+    {
+      "test": "10 immutable policy snapshot, symlink/read budgets, privacy and schema validation",
+      "passed": true
+    },
+    {
+      "test": "11 known-symbol graph substitute only with resolved, structurally valid evidence",
+      "passed": true
+    },
+    {
+      "test": "12 guidance respects a restricted retrieval allowlist",
+      "passed": true
+    }
+  ]
+}

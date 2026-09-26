@@ -1,0 +1,27 @@
+{
+  "policy_version": "1",
+  "profile": "indexed-repo",
+  "harness": "hermes",
+  "redirects": {
+    "bash_raw_search": {
+      "code": "HERMES_USE_SEARCH_FILES",
+      "redirect": "search_files",
+      "guidance": "Call search_files(pattern=\"<regex>\", path=\"<dir>\") instead of a raw recursive shell search: it is ripgrep-backed, bounded, and returns match lines without loading whole files.",
+      "argv0_any": ["grep", "egrep", "fgrep", "rg", "ag", "ack", "find", "fd"]
+    },
+    "bash_raw_read": {
+      "code": "HERMES_USE_READ_FILE",
+      "redirect": "read_file",
+      "guidance": "Call read_file(path=\"<file>\", offset=<n>, limit=<n>) instead of cat/head/tail: it returns numbered lines with pagination and does not dump the whole file into context.",
+      "argv0_any": ["cat", "head", "tail", "less", "more", "bat"]
+    },
+    "bash_raw_edit": {
+      "code": "HERMES_USE_PATCH",
+      "redirect": "patch",
+      "guidance": "Call patch(path=\"<file>\", old_string=\"...\", new_string=\"...\") instead of sed -i / awk / tee redirection: patch reports a diff and cannot silently corrupt a file.",
+      "argv0_any": ["sed", "awk", "perl"]
+    }
+  },
+  "denied_without_argv0": false,
+  "allow_list_commands": ["pwd", "date", "git status", "git diff", "git log", "git rev-parse", "ls", "wc", "which", "hermes"]
+}

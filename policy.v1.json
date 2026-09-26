@@ -1,0 +1,18 @@
+{
+  "policy_version": "1",
+  "profile": "indexed-repo",
+  "allowed_retrieval_tools": ["codebase_context", "call_graph", "call_graph_path", "implementation_lookup"],
+  "approved_bash": [
+    {"prefix": ["pwd"], "args": [[]]},
+    {"prefix": ["timeout", "10", "git", "status"], "args": [["--short"]]}
+  ],
+  "read_budget": {"calls": 3, "lines": 100, "total_lines": 200},
+  "block_budget": 3,
+  "degraded_fallback": {
+    "enabled": true,
+    "calls": 20,
+    "read_lines": 200,
+    "approved_bash": [{"prefix": ["timeout", "10", "rg"], "args": [["--files"]]}],
+    "allow_edits": true
+  }
+}
