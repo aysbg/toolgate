@@ -22,27 +22,37 @@ Two experiments, both with real dispatches on a real repo (Pi 0.87.1,
 |---|---|
 | Advisory skill only | agent knew the right tool, used it anyway → task failure |
 | Output **pre-filtering** (LLM or rules) | **−1.8% / −2.9%** run-level input tokens — an order of magnitude below the predeclared ≥15% gate |
-| **Orientation gate** (this project) | prevention 1.0, recovery 1.0, eligible gate-bypasses **0** over 11 runs |
+| **Orientation gate** (this project) | prevention 1.0, recovery 0.92, eligible gate-bypasses **0** over 13 eligible gate attempts |
+| Gate + output filter combined | filter **never fired** (0/65 events) — the gate's bounded outputs starve it |
 
 Pre-filtering fails because most tokens are not in *filterable* tool output — they are
 in traversal strategy. Blocking a bad call before it runs attacks the cause; scrubbing
-its output attacks a symptom.
+its output attacks a symptom. Full results, economics, and the failure-tail analysis
+live in **[docs/FINDINGS.md](docs/FINDINGS.md)**.
 
 ### What the gate costs
 
 The gate is **not free**, and we measure what it costs rather than implying otherwise.
-On eligible discovery tasks (T4/T5, counterbalanced):
+Per successful run (T4/T5 pooled, backfilled from session transcripts):
 
 | | advisory only | gate active | ratio |
 |---|---|---|---|
-| Uncached input tokens | 40,748 | 60,272 | **1.48×** |
-| Cost | $0.83 | $1.08 | **1.30×** |
+| Uncached input tokens | 10,187 | 13,263 | **1.30×** |
+| Total tokens | 43,883 | 55,953 | **1.28×** |
+| Cost | $0.208 | $0.252 | **1.22×** |
 
 So the gate buys deterministic prevention, recovery, and zero eligible bypasses at
-roughly **30% more money** on discovery tasks. The extra spend is orientation queries
-the agent would otherwise have skipped — the cost *is* the mechanism. On repos with a
-warm index the overhead trends lower; on tasks that genuinely need full-file reads it
-should be zero, which is what the `bounded-scratch` profile exists for.
+roughly **20–30% more per successful run**. The extra spend is orientation queries
+the agent would otherwise have skipped — the cost *is* the mechanism.
+
+But agent-run economics are dominated by **failure tails**, not successful-run
+averages: the advisory arm's motivating failure burned **6.25M tokens / $12.94**
+(30–250× a normal run) by raw-scanning into two context compactions and failing its
+task. The long-run saving comes from the gate forcing the agent to use the index as
+its memory instead of the context window — fewer wasted reads, fewer compactions.
+On warm, well-indexed repos the overhead trends to parity (measured ~9K uncached /
+$0.21 per run in later gated rounds); on tasks that genuinely need full-file reads
+it is zero — that is what the `bounded-scratch` profile is for.
 
 If you want the cheap-but-unreliable path, the advisory skill alone is that path, and
 it is the arm that failed its task.
@@ -78,13 +88,15 @@ index.ts, state.ts    # Pi extension adapter (tool_call veto)
 gate_tests/           # 13 deterministic tests; no model, no network
 bench/                # counterbalanced A/G harness, fixtures, independent oracles
 hermes/               # Hermes pre_tool_call adapter (same design, Python)
+adapters/             # PORTING.md + CONFORMANCE.md for new harnesses
+docs/                 # FINDINGS.md (measured evidence), USAGE.md, PI_ADAPTER.md
 ```
 
 ## Harness support
 
 | Harness | Enforcement primitive | Status |
 |---|---|---|
-| **Pi** (`pi-coding-agent`) | extension `tool_call` veto `{block, reason}` | implemented + benchmarked (13/13 deterministic tests, 11 live runs) |
+| **Pi** (`pi-coding-agent`) | extension `tool_call` veto `{block, reason}` | implemented + benchmarked (13/13 deterministic tests, 13 eligible live gate attempts) |
 | **Hermes** | blocking `pre_tool_call` shell hook | implemented + verified through the production hook engine (22 unit + 8 engine-level tests) |
 | **Claude Code** | `PreToolUse` hook, `{"decision":"block","reason":...}` | port path designed; the dialect is shared |
 | **Codex / OpenCode** | same Claude-Code hook dialect | port path designed |
@@ -110,8 +122,12 @@ timeout 40 node --experimental-strip-types gate_tests/run.ts
 python3 -B hermes/test_toolgate_hermes.py     # 22 deterministic tests
 ```
 
-See `README.md` in this directory and `hermes/README.md` for wiring, rollback, and the
-kill switch.
+**Usage**: profile selection, per-harness wiring, load order, kill switch, and
+operating discipline — see **[docs/USAGE.md](docs/USAGE.md)**.
+**Measured findings**: economics, failure-tail analysis, and the
+filter-is-redundant-behind-the-gate result — see
+**[docs/FINDINGS.md](docs/FINDINGS.md)**.
+Pi-specific details: `docs/PI_ADAPTER.md`; Hermes: `hermes/README.md`.
 
 ## Non-goals
 
