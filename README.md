@@ -28,6 +28,25 @@ Pre-filtering fails because most tokens are not in *filterable* tool output — 
 in traversal strategy. Blocking a bad call before it runs attacks the cause; scrubbing
 its output attacks a symptom.
 
+### What the gate costs
+
+The gate is **not free**, and we measure what it costs rather than implying otherwise.
+On eligible discovery tasks (T4/T5, counterbalanced):
+
+| | advisory only | gate active | ratio |
+|---|---|---|---|
+| Uncached input tokens | 40,748 | 60,272 | **1.48×** |
+| Cost | $0.83 | $1.08 | **1.30×** |
+
+So the gate buys deterministic prevention, recovery, and zero eligible bypasses at
+roughly **30% more money** on discovery tasks. The extra spend is orientation queries
+the agent would otherwise have skipped — the cost *is* the mechanism. On repos with a
+warm index the overhead trends lower; on tasks that genuinely need full-file reads it
+should be zero, which is what the `bounded-scratch` profile exists for.
+
+If you want the cheap-but-unreliable path, the advisory skill alone is that path, and
+it is the arm that failed its task.
+
 ## How it works
 
 A three-state machine bound to a dispatch identity:
